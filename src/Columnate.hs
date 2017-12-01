@@ -1,7 +1,7 @@
 {-# language DeriveGeneric     #-}
 {-# language OverloadedStrings #-}
 
-module Main where
+module Columnate where
 
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
@@ -36,6 +36,7 @@ columnate sep =
 
 main :: IO ()
 main = do
-  Options mSep <- Options.Generic.getRecord "Columnate data sets while preserving color codes"
+  Options mSep <- Options.Generic.getRecord
+    "Columnate data sets while preserving color codes"
   let sep = fromMaybe defaultSep mSep
   Data.Text.IO.interact $ Data.Text.unlines . columnate sep . Data.Text.lines

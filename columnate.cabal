@@ -10,16 +10,56 @@ maintainer:          bts@gmail.com
 -- copyright:
 category:            Text
 build-type:          Simple
-extra-source-files:  ChangeLog.md
 cabal-version:       >=1.10
 
+extra-source-files:
+  ChangeLog.md
+
+source-repository head
+  type: git
+  location: git://github.com/bts/columnate.git
+
+flag test-tasty
+  default: True
+  manual: True
+
+library
+  default-language: Haskell2010
+  ghc-options:      -Wall -threaded -rtsopts -with-rtsopts=-N
+  hs-source-dirs:   src
+  exposed-modules:  Columnate
+  build-depends:    base             >= 4.9  && < 4.10
+                  , optparse-generic >= 1.2  && < 1.3
+                  , text             >= 1.2  && < 1.3
+                  , vector           >= 0.12 && < 0.13
+
 executable columnate
-  main-is:             Main.hs
+  main-is:          Main.hs
+  build-depends:    base             >= 4.9  && < 4.10
+                  , columnate
+  hs-source-dirs:   exe
+  default-language: Haskell2010
+  ghc-options:      -Wall -threaded -rtsopts -with-rtsopts=-N
   -- other-modules:
   -- other-extensions:
-  build-depends:       base             >= 4.9  && < 4.10
-                     , optparse-generic >= 1.2  && < 1.3
-                     , text             >= 1.2  && < 1.3
-                     , vector           >= 0.12 && < 0.13
-  hs-source-dirs:      src
-  default-language:    Haskell2010
+
+test-suite tasty
+  type:             exitcode-stdio-1.0
+  default-language: Haskell2010
+  main-is:          test.hs
+  hs-source-dirs:   test/src
+  ghc-options:      -Wall -threaded -rtsopts -with-rtsopts=-N
+  -- other-modules:
+  if !flag(test-tasty)
+    buildable: False
+  else
+    -- build-tool-depends: tasty-discover:tasty-discover >= 3.0 && < 4.2
+    build-depends: columnate
+    build-depends:
+      base,
+      -- QuickCheck,
+      tasty            >= 0.11 && < 0.12,
+      -- tasty-quickcheck,
+      -- tasty-golden     >= 2.3  && < 2.4,
+      -- tasty-hunit      >= 0.9  && < 0.10,
+      text
