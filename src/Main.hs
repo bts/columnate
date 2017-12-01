@@ -30,6 +30,10 @@ columnate :: Char -> [Text] -> [Text]
 columnate sep =
   fmap (Data.Text.unwords . Data.Text.splitOn (Data.Text.singleton sep))
 
+-- TODO: add some basic tests for columnate function
+-- TODO: right-pad each col to meet width of that column
+-- TODO: add test/support for missing/extra cols
+
 main :: IO ()
 main = do
   Options mSep <- Options.Generic.getRecord "Columnate data sets while preserving color codes"
