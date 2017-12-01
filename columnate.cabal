@@ -1,0 +1,25 @@
+name:                columnate
+version:             0.1.0.0
+synopsis:            Columnate data sets while preserving color codes
+-- description:
+homepage:            http://github.com/bts/columnate
+license:             BSD3
+license-file:        LICENSE
+author:              Brian Schroeder
+maintainer:          bts@gmail.com
+-- copyright:
+category:            Text
+build-type:          Simple
+extra-source-files:  ChangeLog.md
+cabal-version:       >=1.10
+
+executable columnate
+  main-is:             Main.hs
+  -- other-modules:
+  -- other-extensions:
+  build-depends:       base             >= 4.9  && < 4.10
+                     , optparse-generic >= 1.2  && < 1.3
+                     , text             >= 1.2  && < 1.3
+                     , vector           >= 0.12 && < 0.13
+  hs-source-dirs:      src
+  default-language:    Haskell2010
