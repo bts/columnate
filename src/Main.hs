@@ -1,14 +1,37 @@
+{-# language DeriveGeneric     #-}
 {-# language OverloadedStrings #-}
 
 module Main where
 
+import Data.Maybe (fromMaybe)
 import Data.Text (Text)
+import GHC.Generics (Generic)
+import Options.Generic (ParseRecord)
 
 import qualified Data.Text
 import qualified Data.Text.IO
+import qualified Options.Generic
 
-columnate :: [Text] -> [Text]
-columnate = fmap (Data.Text.unwords . Data.Text.splitOn "»")
+data Options
+  = Options
+    { separator :: Maybe Char }
+  deriving (Generic, Show)
+
+instance ParseRecord Options where
+  parseRecord = Options.Generic.parseRecordWithModifiers $
+    Options.Generic.defaultModifiers
+      { Options.Generic.shortNameModifier = Options.Generic.firstLetter
+      }
+
+defaultSep :: Char
+defaultSep = '\t'
+
+columnate :: Char -> [Text] -> [Text]
+columnate sep =
+  fmap (Data.Text.unwords . Data.Text.splitOn (Data.Text.singleton sep))
 
 main :: IO ()
-main = Data.Text.IO.interact $ Data.Text.unlines . columnate . Data.Text.lines
+main = do
+  Options mSep <- Options.Generic.getRecord "Columnate data sets while preserving color codes"
+  let sep = fromMaybe defaultSep mSep
+  Data.Text.IO.interact $ Data.Text.unlines . columnate sep . Data.Text.lines
