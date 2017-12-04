@@ -7,6 +7,7 @@ import Control.Monad ((<$!>))
 import Data.Maybe (fromMaybe)
 import Data.Semigroup (Max (Max), (<>))
 import Data.Text (Text)
+import Data.These (These)
 import GHC.Generics (Generic)
 import Options.Generic (ParseField (..), ParseRecord)
 
@@ -46,8 +47,12 @@ fieldWidth = Data.Text.length . fieldText
 defaultSep :: Separator -- TODO: use Data.Default
 defaultSep = Sep '\t'
 
+--
+-- TODO: we /could/ drop trailing spaces, but then we'd violate
+-- prop_onlyLongerLines
+--
 columnate :: Separator -> [Line] -> [Line]
-columnate sep lines' = collateFields <$> table
+columnate sep lines' = collateFields . padFields <$> table
   where
     collateFields :: [Field] -> Line
     collateFields = Line . Data.Text.unwords . fmap fieldText
@@ -68,8 +73,18 @@ columnate sep lines' = collateFields <$> table
         updateWidths prevWidths fields = Data.These.mergeThese (<>) <$>
           Data.Align.align prevWidths (Max . fieldWidth <$> fields)
 
-    -- paddedTable :: [[Text]]
-    -- paddedTable =
+    padFields :: [Field] -> [Field]
+    padFields fields = pad <$> Data.Align.align fields columnWidths
+      where
+        pad :: These Field Int -> Field
+        pad = Data.These.these
+          (\_field ->
+            error "impossible: missing field width")
+          (\width ->
+            Field $ Data.Text.replicate width " ")
+          (\field width ->
+            Field $ fieldText field
+                 <> Data.Text.replicate (width - fieldWidth field) " ")
 
 main :: IO ()
 main = do
