@@ -1,6 +1,5 @@
-import Columnate (Separator (..))
+import Columnate (Field (..), Line (..), Separator (..))
 import Data.Foldable (for_)
-import Data.Text (Text)
 import Hedgehog (MonadGen, Property, assert, forAll, property, (===))
 import Test.Tasty
 import Test.Tasty.Hedgehog (testProperty)
@@ -30,17 +29,20 @@ examples = testGroup "Unit tests"
 
 --
 
-genField :: MonadGen m => Separator -> m Char -> m Text
-genField sep genChar = Gen.text (Range.linear 0 100) $ Gen.filter (/= c) genChar
-  where c = sepChar sep
-
-genLine :: MonadGen m => Separator -> m Char -> m Text
-genLine sep genChar = Data.Text.intercalate tSep <$> genFieldList
+genField :: MonadGen m => Separator -> m Char -> m Field
+genField sep genChar = Field <$>
+    Gen.text (Range.linear 0 100) (Gen.filter (/= c) genChar)
   where
-    genFieldList = Gen.list (Range.linear 0 20) (genField sep genChar)
-    tSep = Data.Text.singleton (sepChar sep)
+    c = sepChar sep
 
-genLines :: MonadGen m => Separator -> m Char -> m [Text]
+genLine :: MonadGen m => Separator -> m Char -> m Line
+genLine sep genChar = mkLine <$> genFieldList
+  where
+    tSep = Data.Text.singleton (sepChar sep)
+    mkLine = Line . Data.Text.intercalate tSep . fmap fieldText
+    genFieldList = Gen.list (Range.linear 0 20) (genField sep genChar)
+
+genLines :: MonadGen m => Separator -> m Char -> m [Line]
 genLines sep genChar = Gen.list (Range.linear 0 50) (genLine sep genChar)
 
 prop_idempotence :: Property
@@ -58,8 +60,12 @@ prop_preservesLineCount = property $ do
 
 prop_onlyLongerLines :: Property
 prop_onlyLongerLines = property $ do
-  let sep = Sep '\t'
-  before <- forAll $ genLines sep Gen.unicode
-  let after = Columnate.columnate sep before
-  for_ (zip before after) $ \(beforeLine, afterLine) ->
-    assert $ Data.Text.length beforeLine <= Data.Text.length afterLine
+    let sep = Sep '\t'
+    before <- forAll $ genLines sep Gen.unicode
+    let after = Columnate.columnate sep before
+    for_ (zip before after) $ \(beforeLine, afterLine) ->
+      assert $ lineLength beforeLine <= lineLength afterLine
+
+  where
+    lineLength :: Line -> Int
+    lineLength = Data.Text.length . lineText

@@ -35,36 +35,52 @@ newtype Separator = Sep { sepChar :: Char }
 instance ParseField Separator where
   parseField msg label shortName = Sep <$> parseField msg label shortName
 
---
--- TODO: use these:
---
-newtype Line = Line Text
-newtype Field = Field Text
-type Fields = [Field]
+newtype Line = Line { lineText :: Text }
+  deriving (Eq, Show)
+
+newtype Field = Field { fieldText :: Text }
+
+fieldWidth :: Field -> Int
+fieldWidth = Data.Text.length . fieldText
 
 defaultSep :: Separator -- TODO: use Data.Default
 defaultSep = Sep '\t'
 
-columnate :: Separator -> [Text] -> [Text]
-columnate sep lines' = fmap Data.Text.unwords table
+columnate :: Separator -> [Line] -> [Line]
+columnate sep lines' = collateFields <$> table
   where
-    table :: [[Text]]
-    table = Data.Text.splitOn (Data.Text.singleton $ sepChar sep) <$> lines'
+    collateFields :: [Field] -> Line
+    collateFields = Line . Data.Text.unwords . fmap fieldText
+
+    splitLine :: Line -> [Field]
+    splitLine = fmap Field
+              . Data.Text.splitOn (Data.Text.singleton $ sepChar sep)
+              . lineText
+
+    table :: [[Field]]
+    table = splitLine <$> lines'
 
     columnWidths :: [Int]
     columnWidths =
         Data.Semigroup.getMax <$!> Data.Foldable.foldl' updateWidths [] table
       where
-        updateWidths :: [Max Int] -> [Text] -> [Max Int]
+        updateWidths :: [Max Int] -> [Field] -> [Max Int]
         updateWidths prevWidths fields = Data.These.mergeThese (<>) <$>
-          Data.Align.align prevWidths (Max . Data.Text.length <$> fields)
+          Data.Align.align prevWidths (Max . fieldWidth <$> fields)
 
     -- paddedTable :: [[Text]]
     -- paddedTable =
 
 main :: IO ()
 main = do
-  Options mSep <- Options.Generic.getRecord
-    "Columnate data sets while preserving color codes"
-  let sep = fromMaybe defaultSep mSep
-  Data.Text.IO.interact $ Data.Text.unlines . columnate sep . Data.Text.lines
+    Options mSep <- Options.Generic.getRecord
+      "Columnate data sets while preserving color codes"
+    let sep = fromMaybe defaultSep mSep
+    Data.Text.IO.interact $ joinLines . columnate sep . splitText
+
+  where
+    splitText :: Text -> [Line]
+    splitText = fmap Line . Data.Text.lines
+
+    joinLines :: [Line] -> Text
+    joinLines = Data.Text.unlines . fmap lineText
