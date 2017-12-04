@@ -1,0 +1,1 @@
+-c "cabal repl lib:columnate --ghc-options=-fno-code"

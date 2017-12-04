@@ -1,5 +1,6 @@
-{ mkDerivation, attoparsec, base, containers, Diff, mtl, nix-derivation
-, optparse-generic, stdenv, system-filepath, tasty, text, unix, vector
+{ mkDerivation, attoparsec, base, containers, Diff, hedgehog, mtl
+, nix-derivation, optparse-generic, stdenv, system-filepath, tasty
+, tasty-hedgehog, text, these, unix, vector
 }:
 mkDerivation {
   pname = "columnate";
@@ -8,14 +9,14 @@ mkDerivation {
   isLibrary = false;
   isExecutable = true;
   libraryHaskellDepends = [
-    base optparse-generic text vector
+    base optparse-generic text these vector
   ];
   executableHaskellDepends = [
     base
   ];
   testToolDepends = [ ];
   testHaskellDepends = [
-    base tasty text
+    base hedgehog tasty tasty-hedgehog text
   ];
   homepage = "https://github.com/bts/columnate";
   description = "Columnate data sets while preserving color codes";

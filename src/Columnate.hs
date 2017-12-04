@@ -3,18 +3,24 @@
 
 module Columnate where
 
+import Control.Monad ((<$!>))
 import Data.Maybe (fromMaybe)
+import Data.Semigroup (Max (Max), (<>))
 import Data.Text (Text)
 import GHC.Generics (Generic)
-import Options.Generic (ParseRecord)
+import Options.Generic (ParseField (..), ParseRecord)
 
+import qualified Data.Align
+import qualified Data.Foldable
+import qualified Data.Semigroup
 import qualified Data.Text
 import qualified Data.Text.IO
+import qualified Data.These
 import qualified Options.Generic
 
 data Options
   = Options
-    { separator :: Maybe Char }
+    { separator :: Maybe Separator }
   deriving (Generic, Show)
 
 instance ParseRecord Options where
@@ -23,16 +29,38 @@ instance ParseRecord Options where
       { Options.Generic.shortNameModifier = Options.Generic.firstLetter
       }
 
-defaultSep :: Char
-defaultSep = '\t'
+newtype Separator = Sep { sepChar :: Char }
+  deriving (Show)
 
-columnate :: Char -> [Text] -> [Text]
-columnate sep =
-  fmap (Data.Text.unwords . Data.Text.splitOn (Data.Text.singleton sep))
+instance ParseField Separator where
+  parseField msg label shortName = Sep <$> parseField msg label shortName
 
--- TODO: add some basic tests for columnate function
--- TODO: right-pad each col to meet width of that column
--- TODO: add test/support for missing/extra cols
+--
+-- TODO: use these:
+--
+newtype Line = Line Text
+newtype Field = Field Text
+type Fields = [Field]
+
+defaultSep :: Separator -- TODO: use Data.Default
+defaultSep = Sep '\t'
+
+columnate :: Separator -> [Text] -> [Text]
+columnate sep lines' = fmap Data.Text.unwords table
+  where
+    table :: [[Text]]
+    table = Data.Text.splitOn (Data.Text.singleton $ sepChar sep) <$> lines'
+
+    columnWidths :: [Int]
+    columnWidths =
+        Data.Semigroup.getMax <$!> Data.Foldable.foldl' updateWidths [] table
+      where
+        updateWidths :: [Max Int] -> [Text] -> [Max Int]
+        updateWidths prevWidths fields = Data.These.mergeThese (<>) <$>
+          Data.Align.align prevWidths (Max . Data.Text.length <$> fields)
+
+    -- paddedTable :: [[Text]]
+    -- paddedTable =
 
 main :: IO ()
 main = do
