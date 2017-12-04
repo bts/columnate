@@ -1,6 +1,6 @@
 { mkDerivation, attoparsec, base, containers, Diff, hedgehog, mtl
 , nix-derivation, optparse-generic, stdenv, system-filepath, tasty
-, tasty-hedgehog, text, these, unix, vector
+, tasty-hedgehog, text, these, unix
 }:
 mkDerivation {
   pname = "columnate";
@@ -9,7 +9,7 @@ mkDerivation {
   isLibrary = false;
   isExecutable = true;
   libraryHaskellDepends = [
-    base optparse-generic text these vector
+    base optparse-generic text these
   ];
   executableHaskellDepends = [
     base
