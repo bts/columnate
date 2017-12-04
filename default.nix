@@ -21,4 +21,5 @@ mkDerivation {
   homepage = "https://github.com/bts/columnate";
   description = "Columnate data sets while preserving color codes";
   license = stdenv.lib.licenses.bsd3;
+  enableSharedExecutables = false;
 }
