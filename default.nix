@@ -1,6 +1,6 @@
 { mkDerivation, attoparsec, base, containers, Diff, hedgehog, mtl
 , nix-derivation, optparse-generic, stdenv, system-filepath, tasty
-, tasty-hedgehog, text, these, unix, gmp6, glibc
+, tasty-hedgehog, text, these, unix, gmp5, glibc
 }:
 mkDerivation {
   pname = "columnate";
@@ -22,10 +22,10 @@ mkDerivation {
   description = "Columnate data sets while preserving color codes";
   license = stdenv.lib.licenses.bsd3;
   enableSharedExecutables = false;
+  enableSharedLibraries = false;
   configureFlags = [
     "--ghc-option=-optl=-static"
-    "--ghc-option=-optl=-pthread"
-    "--ghc-option=-optl=-L${gmp6.static}/lib"
+    "--ghc-option=-optl=-L${gmp5.static}/lib"
     "--ghc-option=-optl=-L${glibc.static}/lib"
   ];
 }
