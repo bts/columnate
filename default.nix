@@ -1,6 +1,6 @@
 { mkDerivation, attoparsec, base, containers, Diff, hedgehog, mtl
 , nix-derivation, optparse-generic, stdenv, system-filepath, tasty
-, tasty-hedgehog, text, these, unix, gmp5, glibc
+, tasty-hedgehog, text, these, unix, gmp6, glibc
 }:
 mkDerivation {
   pname = "columnate";
@@ -25,7 +25,7 @@ mkDerivation {
   enableSharedLibraries = false;
   configureFlags = [
     "--ghc-option=-optl=-static"
-    "--ghc-option=-optl=-L${gmp5.static}/lib"
+    "--ghc-option=-optl=-L${gmp6.override {withStatic = true;}}/lib"
     "--ghc-option=-optl=-L${glibc.static}/lib"
   ];
 }
