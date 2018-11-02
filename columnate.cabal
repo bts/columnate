@@ -28,14 +28,14 @@ library
   ghc-options:      -Wall
   hs-source-dirs:   src
   exposed-modules:  Columnate
-  build-depends:    base             >= 4.9  && < 5
+  build-depends:    base             < 5
                   , optparse-generic >= 1.2  && < 1.3
                   , text             >= 1.2  && < 1.3
                   , these
 
 executable columnate
   main-is:          Main.hs
-  build-depends:    base             >= 4.9  && < 5
+  build-depends:    base             < 5
                   , columnate
   hs-source-dirs:   exe
   default-language: Haskell2010
