@@ -31,7 +31,7 @@ instance ParseRecord Options where
       }
 
 newtype Separator = Sep { sepChar :: Char }
-  deriving (Show)
+  deriving (Read, Show)
 
 instance ParseField Separator where
   parseField msg label shortName = Sep <$> parseField msg label shortName
