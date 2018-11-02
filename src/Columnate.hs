@@ -3,6 +3,7 @@
 
 module Columnate where
 
+import Control.Applicative ((<|>))
 import Control.Monad ((<$!>))
 import Data.Maybe (fromMaybe)
 import Data.Semigroup (Max (Max), (<>))
@@ -12,6 +13,8 @@ import GHC.Generics (Generic)
 import Options.Generic (ParseField (..), ParseRecord)
 
 import qualified Data.Align
+import qualified Data.Attoparsec.Text
+import qualified Data.Char
 import qualified Data.Foldable
 import qualified Data.Semigroup
 import qualified Data.Text
@@ -41,8 +44,35 @@ newtype Line = Line { lineText :: Text }
 
 newtype Field = Field { fieldText :: Text }
 
+consumeColorCodeP :: Data.Attoparsec.Text.Parser ()
+consumeColorCodeP = "\x1B["
+  *> (Data.Attoparsec.Text.skipWhile Data.Char.isDigit
+       `Data.Attoparsec.Text.sepBy1`
+       Data.Attoparsec.Text.char ';')
+  *> Data.Attoparsec.Text.skip (== 'm')
+
+colorlessTextP :: Data.Attoparsec.Text.Parser Text
+colorlessTextP = do
+  before <- Data.Attoparsec.Text.takeWhile1 (/= '\x1B') <|> ""
+  mNextChar <- Data.Attoparsec.Text.peekChar
+  case mNextChar of
+    Just _escapeChar -> do
+      at <- (consumeColorCodeP *> "") <|> "\x1B"
+      rest <- colorlessTextP
+      pure $ before <> at <> rest
+    Nothing -> pure before
+
+colorless :: Text -> Text
+colorless input =
+  case Data.Attoparsec.Text.parseOnly parser input of
+    Left err -> error $ "impossible: colorless parsing failed: " ++ err
+    Right t  -> t
+
+  where
+    parser = colorlessTextP <* Data.Attoparsec.Text.endOfInput
+
 fieldWidth :: Field -> Int
-fieldWidth = Data.Text.length . fieldText
+fieldWidth = Data.Text.length . colorless . fieldText
 
 defaultSep :: Separator -- TODO: use Data.Default
 defaultSep = Sep '\t'
