@@ -24,7 +24,7 @@ mkDerivation {
   enableSharedLibraries = false;
   configureFlags = [
     "--ghc-option=-optl=-static"
-    "--ghc-option=-optl=-L${gmp6.override {withStatic = true;}}/lib"
-    "--ghc-option=-optl=-L${glibc.static}/lib"
+    "--extra-lib-dirs=${gmp6.override { withStatic = true; }}/lib"
+    "--extra-lib-dirs=${glibc.static}/lib"
   ];
 }

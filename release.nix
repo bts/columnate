@@ -20,7 +20,7 @@ let
   };
 
   pkgs =
-    import <nixpkgs> { inherit config; };
+    (import <nixpkgs> { inherit config; }).pkgsMusl;
 
 in
   { columnate = pkgs.haskellPackages.columnate;
