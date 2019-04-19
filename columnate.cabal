@@ -30,7 +30,7 @@ library
   exposed-modules:  Columnate
   build-depends:    attoparsec       >= 0.13 && < 0.14
                   , base             < 5
-                  , optparse-generic >= 1.2  && < 1.3
+                  , optparse-generic >= 1.2  && < 1.4
                   , text             >= 1.2  && < 1.3
                   , these
 
