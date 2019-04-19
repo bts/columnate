@@ -11,11 +11,21 @@
 let
   config = {
     packageOverrides = pkgs: {
+
       haskellPackages = pkgs.haskellPackages.override {
         overrides = haskellPackagesNew: haskellPackagesOld: {
-          columnate = haskellPackagesNew.callPackage ./default.nix { };
+          columnate = haskellPackagesNew.callPackage ./default.nix {
+            libffi = pkgs.libffi.overrideDerivation (attrs: {
+              configureFlags = [
+              "--with-gcc-arch=generic" # no detection of -march= or -mtune=
+              "--enable-pax_emutramp"
+              "--enable-static"
+              ];
+            });
+          };
         };
       };
+
     };
   };
 
